@@ -1,0 +1,3 @@
+cryptography>=42.0.0
+psec>=1.0.0
+dukpt>=1.0.0
