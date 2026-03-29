@@ -32,13 +32,17 @@ python -m venv .venv
 
 **Mac / Linux:**
 ```bash
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
 **Windows:**
 ```bat
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
+
+> El `pip install --upgrade pip` evita el warning `WARNING: You are using pip version X...` que aparece al instalar con versiones antiguas de pip.
 
 ---
 
