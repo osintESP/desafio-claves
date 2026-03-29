@@ -107,6 +107,7 @@ Opción (1 o 2): 2
 
 #### Exportar la PEK
 
+**Mac / Linux:**
 ```bash
 python3 -m key_exchange export-pek \
   --kek-component-1 <hex o ruta> \
@@ -115,8 +116,14 @@ python3 -m key_exchange export-pek \
   --out <ruta de salida>
 ```
 
+**Windows:**
+```bat
+python -m key_exchange export-pek --kek-component-1 <hex o ruta> --kek-component-2 <hex o ruta> --kek-kcv <KCV esperado> --out <ruta de salida>
+```
+
 #### Importar la BDK
 
+**Mac / Linux:**
 ```bash
 python3 -m key_exchange import-bdk \
   --kek-component-1 <hex o ruta> \
@@ -124,6 +131,11 @@ python3 -m key_exchange import-bdk \
   --kek-kcv <KCV esperado> \
   --bdk-keyblock <key block o ruta> \
   --bdk-kcv <KCV esperado>
+```
+
+**Windows:**
+```bat
+python -m key_exchange import-bdk --kek-component-1 <hex o ruta> --kek-component-2 <hex o ruta> --kek-kcv <KCV esperado> --bdk-keyblock <key block o ruta> --bdk-kcv <KCV esperado>
 ```
 
 ---
