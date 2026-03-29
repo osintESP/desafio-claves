@@ -1,4 +1,4 @@
-# key_exchange — Desafío Técnico MercadoPago
+# Desafío Técnico MercadoPago
 
 Solución al desafío de intercambio de claves criptográficas.
 Implementa los tres objetivos del enunciado más el bonus DUKPT.
