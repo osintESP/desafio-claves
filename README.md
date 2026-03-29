@@ -7,14 +7,37 @@ Implementa los tres objetivos del enunciado más el bonus DUKPT.
 
 ## Instalación
 
+### 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/osintESP/intercambio-claves.git
+cd intercambio-claves
+```
+
+### 2. Crear y activar el entorno virtual
+
+**Mac / Linux:**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+**Windows:**
+```bat
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+### 3. Instalar dependencias
+
+**Mac / Linux:**
 ```bash
 pip install -r requirements.txt
 ```
 
-O como paquete instalable (habilita el comando `key-exchange` directamente):
-
-```bash
-pip install -e .
+**Windows:**
+```bat
+pip install -r requirements.txt
 ```
 
 ---
@@ -26,7 +49,13 @@ pip install -e .
 Ejecutar sin argumentos lanza un asistente que solicita cada valor por pantalla.
 Compatible con Windows y Mac:
 
+**Mac / Linux:**
 ```bash
+python3 -m key_exchange
+```
+
+**Windows:**
+```bat
 python -m key_exchange
 ```
 
@@ -40,40 +69,34 @@ Seleccione una operación:
   2) import-bdk  — Importar y validar la BDK desde un key block TR-31
 ```
 
+> **Tip:** Para valores largos como el key block TR-31, podés guardarlos en un archivo
+> de texto y escribir la ruta del archivo cuando el programa lo solicite.
+> Ejemplo: guardá el key block en `bdk_keyblock.txt` e ingresá `bdk_keyblock.txt`.
+
 ---
 
 ### Modo CLI (argumentos)
 
 #### Exportar la PEK
 
-Genera una PEK aleatoria y la entrega envuelta en un key block TR-31:
-
 ```bash
-python -m key_exchange export-pek \
+python3 -m key_exchange export-pek \
   --kek-component-1 <hex o ruta> \
   --kek-component-2 <hex o ruta> \
   --kek-kcv <KCV esperado> \
   --out <ruta de salida>
 ```
 
-**Salida:** key block TR-31 de la PEK + KCV para verificación.
-
----
-
 #### Importar la BDK
 
-Desenvuelve y valida el key block TR-31 de la BDK:
-
 ```bash
-python -m key_exchange import-bdk \
+python3 -m key_exchange import-bdk \
   --kek-component-1 <hex o ruta> \
   --kek-component-2 <hex o ruta> \
   --kek-kcv <KCV esperado> \
   --bdk-keyblock <key block o ruta> \
   --bdk-kcv <KCV esperado>
 ```
-
-**Salida:** BDK validada + resultado del bonus DUKPT.
 
 ---
 
@@ -122,8 +145,8 @@ D0144P0AE00S000083F2B29042069AB0A388BD4D5EDC0B7E540A05F295BF4D2E4F522A48B7CCB8C5
 ## Tests
 
 ```bash
-pip install pytest
-python -m pytest tests/ -v
+python3 -m pytest tests/ -v      # Mac / Linux
+python -m pytest tests/ -v       # Windows
 ```
 
 33 casos de prueba que usan los vectores reales del enunciado (componentes, KCV, key block BDK).
@@ -201,7 +224,7 @@ operación criptográfica, devolviendo mensajes de error claros al usuario.
 
 ## Respuestas a las preguntas teóricas
 
-**1. ¿Podrían enviarse los dos componentes por el mismo canal?**
+**1. ¿Podrían enviarse los dos componentes de la KEK por el mismo canal?**
 No. Si el canal es comprometido, el atacante obtiene ambos componentes y puede
 reconstruir la KEK con XOR. El valor de seguridad del split depende de que los
 canales sean independientes: comprometer uno no debe comprometer el otro.
@@ -229,3 +252,4 @@ Por eso el dual control exige que los custodios sean completamente independiente
 | `psec` | 1.0.0 | Wrap y unwrap de key blocks TR-31 (ANSI X9.143) |
 | `dukpt` | 1.0.0 | Derivación IPEK y future key para el bonus |
 | `bitstring` | — | Manejo de BitArray para la API de dukpt |
+| `pytest` | 7.0.0 | Tests |
