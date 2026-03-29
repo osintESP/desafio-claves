@@ -189,7 +189,7 @@ python3 -m pytest tests/ -v      # Mac / Linux
 python -m pytest tests/ -v       # Windows
 ```
 
-33 casos de prueba que usan los vectores reales del enunciado (componentes, KCV, key block BDK).
+67 casos de prueba: vectores reales del enunciado + suite adversarial exhaustiva.
 
 ---
 
@@ -259,6 +259,18 @@ atacante pueda inferir cuántos bytes coinciden midiendo el tiempo de respuesta.
 El CLI valida formato hex, paridad de caracteres, longitudes esperadas (KCV = 3 bytes,
 KSN = 10 bytes) y múltiplo de bloque (ciphertext 3DES) antes de ejecutar cualquier
 operación criptográfica, devolviendo mensajes de error claros al usuario.
+
+**Los mensajes de error no revelan información sensible.**
+`verify_kcv` solo informa que el KCV no coincide, sin exponer el valor calculado
+ni el esperado. Esto evita que un atacante use los mensajes de error para inferir
+información sobre las claves.
+
+**Validación de tipos y tamaños en todas las funciones criptográficas.**
+Cada función valida el tipo (`bytes`/`str`) y el tamaño de sus argumentos antes
+de operar. Las excepciones de librerías externas (`dukpt`, `cryptography`) se
+capturan y se relanza como `ValueError` con mensajes sin información sensible.
+Los valores `None`, strings vacíos, archivos vacíos y tamaños de clave inválidos
+son rechazados explícitamente en la frontera de cada módulo.
 
 ---
 
