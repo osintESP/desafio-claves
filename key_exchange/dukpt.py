@@ -7,8 +7,13 @@ API real de dukpt 1.x:
     server.gen_key(BitArray(bytes=ksn))       -> bytes  (transaction/future key)
 """
 
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.ciphers import Cipher, modes
 from cryptography.hazmat.backends import default_backend
+
+try:
+    from cryptography.hazmat.decrepit.ciphers.algorithms import TripleDES
+except ImportError:
+    from cryptography.hazmat.primitives.ciphers.algorithms import TripleDES
 import dukpt as dukpt_lib
 from bitstring import BitArray
 
@@ -62,7 +67,7 @@ def _decrypt_3des_ecb(key: bytes, ciphertext: bytes) -> bytes:
     if len(key) == 16:
         key = key + key[:8]
     cipher = Cipher(
-        algorithms.TripleDES(key),
+        TripleDES(key),
         modes.ECB(),
         backend=default_backend(),
     )

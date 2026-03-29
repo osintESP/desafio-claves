@@ -8,8 +8,14 @@ kcv.py — Cálculo de Key Check Value (KCV)
 import hmac
 
 from cryptography.hazmat.primitives.cmac import CMAC
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.ciphers import Cipher, modes
+from cryptography.hazmat.primitives.ciphers import algorithms
 from cryptography.hazmat.backends import default_backend
+
+try:
+    from cryptography.hazmat.decrepit.ciphers.algorithms import TripleDES
+except ImportError:
+    from cryptography.hazmat.primitives.ciphers.algorithms import TripleDES
 
 
 def cmac_kcv(key: bytes, length: int = 3) -> bytes:
@@ -29,7 +35,7 @@ def legacy_kcv(key: bytes, length: int = 3) -> bytes:
     Cifra 8 bytes en cero con 3DES-ECB y devuelve los primeros `length` bytes.
     """
     cipher = Cipher(
-        algorithms.TripleDES(key),
+        TripleDES(key),
         modes.ECB(),
         backend=default_backend(),
     )
