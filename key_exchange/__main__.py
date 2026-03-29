@@ -112,7 +112,7 @@ def _prompt(label: str, hint: str = "") -> str:
     return value
 
 
-def _prompt_optional(label: str, hint: str = "") -> str | None:
+def _prompt_optional(label: str, hint: str = ""):
     """Pide un valor opcional; devuelve None si el usuario lo deja en blanco."""
     suffix = f"  ({hint})" if hint else ""
     value = input(f"  {label}{suffix} [Enter para omitir]: ").strip()
