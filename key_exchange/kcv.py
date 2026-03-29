@@ -47,8 +47,4 @@ def verify_kcv(computed: bytes, expected_hex: str, label: str) -> None:
     """
     expected = bytes.fromhex(expected_hex)
     if not hmac.compare_digest(computed, expected):
-        raise ValueError(
-            f"KCV inválido para {label}: "
-            f"calculado={computed.hex().upper()}, "
-            f"esperado={expected_hex.upper()}"
-        )
+        raise ValueError(f"KCV inválido para {label}")

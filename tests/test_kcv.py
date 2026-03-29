@@ -55,6 +55,9 @@ class TestVerifyKcv:
         with pytest.raises(ValueError, match="KEK"):
             verify_kcv(b"\x00\x00\x00", "F74B90", "KEK")
 
-    def test_error_message_contains_computed_and_expected(self):
-        with pytest.raises(ValueError, match="000000"):
+    def test_error_message_does_not_leak_kcv(self):
+        with pytest.raises(ValueError) as exc_info:
             verify_kcv(b"\x00\x00\x00", "F74B90", "KEK")
+        msg = str(exc_info.value)
+        assert "000000" not in msg
+        assert "F74B90" not in msg
