@@ -8,12 +8,8 @@ API real de dukpt 1.x:
 """
 
 from cryptography.hazmat.primitives.ciphers import Cipher, modes
+from cryptography.hazmat.decrepit.ciphers.algorithms import TripleDES
 from cryptography.hazmat.backends import default_backend
-
-try:
-    from cryptography.hazmat.decrepit.ciphers.algorithms import TripleDES
-except ImportError:
-    from cryptography.hazmat.primitives.ciphers.algorithms import TripleDES
 import dukpt as dukpt_lib
 from bitstring import BitArray
 

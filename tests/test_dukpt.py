@@ -39,11 +39,8 @@ class TestRunDukptBonus:
     def test_decrypt_with_ciphertext(self):
         # Cifrar datos de prueba con la future key para luego descifrarlos
         from cryptography.hazmat.primitives.ciphers import Cipher, modes
+        from cryptography.hazmat.decrepit.ciphers.algorithms import TripleDES
         from cryptography.hazmat.backends import default_backend
-        try:
-            from cryptography.hazmat.decrepit.ciphers.algorithms import TripleDES
-        except ImportError:
-            from cryptography.hazmat.primitives.ciphers.algorithms import TripleDES
 
         result_no_ct = run_dukpt_bonus(BDK, ksn_hex=DEFAULT_KSN)
         future_key = bytes.fromhex(result_no_ct["future_key"])
