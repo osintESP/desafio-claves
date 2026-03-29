@@ -21,7 +21,30 @@ pip install -e .
 
 ## Uso
 
-### Exportar la PEK
+### Modo interactivo (recomendado)
+
+Ejecutar sin argumentos lanza un asistente que solicita cada valor por pantalla.
+Compatible con Windows y Mac:
+
+```bash
+python -m key_exchange
+```
+
+```
+============================================================
+  Intercambio de claves criptográficas — Modo interactivo
+============================================================
+
+Seleccione una operación:
+  1) export-pek  — Generar y exportar una PEK en key block TR-31
+  2) import-bdk  — Importar y validar la BDK desde un key block TR-31
+```
+
+---
+
+### Modo CLI (argumentos)
+
+#### Exportar la PEK
 
 Genera una PEK aleatoria y la entrega envuelta en un key block TR-31:
 
@@ -37,7 +60,7 @@ python -m key_exchange export-pek \
 
 ---
 
-### Importar la BDK
+#### Importar la BDK
 
 Desenvuelve y valida el key block TR-31 de la BDK:
 
@@ -54,30 +77,52 @@ python -m key_exchange import-bdk \
 
 ---
 
-## Ejemplo con los datos del enunciado
+## Resultados con los datos del enunciado
 
-```bash
-python -m key_exchange import-bdk \
-  --kek-component-1 db375bb9dce3b14947e04e92a9356ebbb6e456f3518aed92c8dbc891f22f55d6 \
-  --kek-component-2 1e924acdb5442d3000c0fc9b20101aff1bd7a9bc27d36888c50cef64a7c818b7 \
-  --kek-kcv F74B90 \
-  --bdk-keyblock D0112B0TX00E000080BF1D76A239777F8C2B605EB4FCF6DC9B9CFC6A5170C18282BDAB7D4D4D4559BC6A952101BA74EF8C1563BC2A73BF76 \
-  --bdk-kcv EABBDC
+### export-pek
+
+```
+[*] Ensamblando KEK...
+[+] KEK válida. KCV=F74B90
+[*] Generando PEK aleatoria (AES-256)...
+[+] PEK generada. KCV=20B583
+[*] Envolviendo PEK en key block TR-31...
+[+] Key block guardado en: pek_keyblock.txt
+[+] KCV de la PEK: 20B583
 ```
 
-```bash
-python -m key_exchange export-pek \
-  --kek-component-1 db375bb9dce3b14947e04e92a9356ebbb6e456f3518aed92c8dbc891f22f55d6 \
-  --kek-component-2 1e924acdb5442d3000c0fc9b20101aff1bd7a9bc27d36888c50cef64a7c818b7 \
-  --kek-kcv F74B90 \
-  --out pek_keyblock.txt
+Key block TR-31 generado:
 ```
+D0144P0AE00S000083F2B29042069AB0A388BD4D5EDC0B7E540A05F295BF4D2E4F522A48B7CCB8C51777EE05F30DBF3445F2CDC669E0F22C2754DFDC7C4FCBBDB71CCB088C476437
+```
+
+---
+
+### import-bdk + bonus DUKPT
+
+```
+[*] Ensamblando KEK...
+[+] KEK válida. KCV=F74B90
+[*] Desenvolviendo key block TR-31 de la BDK...
+[+] BDK desenvuelta: 128 bits
+[*] Verificando KCV de la BDK...
+[+] BDK válida. KCV=EABBDC
+
+[*] Ejecutando bonus DUKPT...
+[+] KSN       : 729C77361E9A51E000F2
+[+] IPEK      : DB833E79B68B868C285534462F0099B5
+[+] Future Key: F0BBF26A9B1D48220ED642709E5C4454
+[+] Plaintext : 4D454C495F526F636B73210000000000
+```
+
+**Mensaje descifrado: `MELI_Rocks!`**
 
 ---
 
 ## Tests
 
 ```bash
+pip install pytest
 python -m pytest tests/ -v
 ```
 
@@ -90,7 +135,7 @@ python -m pytest tests/ -v
 ```
 key_exchange/
 ├── __init__.py      # marcador de módulo
-├── __main__.py      # CLI: argparse, subcomandos export-pek e import-bdk
+├── __main__.py      # CLI: modo interactivo + argparse (export-pek / import-bdk)
 ├── kek.py           # ensamblado de KEK por XOR y validación KCV
 ├── kcv.py           # cálculo de KCV: CMAC-KCV (AES) y KCV legacy (3DES)
 ├── keyblock.py      # wrap y unwrap de key blocks TR-31 usando psec
