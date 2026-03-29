@@ -5,9 +5,10 @@ kcv.py — Cálculo de Key Check Value (KCV)
 - KCV legacy (3DES-ECB): para claves 3DES (e.g. BDK)
 """
 
+import hmac
+
 from cryptography.hazmat.primitives.cmac import CMAC
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
 
 
@@ -40,10 +41,11 @@ def legacy_kcv(key: bytes, length: int = 3) -> bytes:
 def verify_kcv(computed: bytes, expected_hex: str, label: str) -> None:
     """
     Compara el KCV calculado contra el esperado (hex string).
+    Usa comparación en tiempo constante para evitar ataques de timing.
     Lanza ValueError con mensaje claro si no coinciden.
     """
     expected = bytes.fromhex(expected_hex)
-    if computed != expected:
+    if not hmac.compare_digest(computed, expected):
         raise ValueError(
             f"KCV inválido para {label}: "
             f"calculado={computed.hex().upper()}, "

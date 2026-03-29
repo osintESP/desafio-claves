@@ -11,6 +11,12 @@ Implementa los tres objetivos del enunciado más el bonus DUKPT.
 pip install -r requirements.txt
 ```
 
+O como paquete instalable (habilita el comando `key-exchange` directamente):
+
+```bash
+pip install -e .
+```
+
 ---
 
 ## Uso
@@ -69,6 +75,16 @@ python -m key_exchange export-pek \
 
 ---
 
+## Tests
+
+```bash
+python -m pytest tests/ -v
+```
+
+33 casos de prueba que usan los vectores reales del enunciado (componentes, KCV, key block BDK).
+
+---
+
 ## Estructura del proyecto
 
 ```
@@ -79,6 +95,12 @@ key_exchange/
 ├── kcv.py           # cálculo de KCV: CMAC-KCV (AES) y KCV legacy (3DES)
 ├── keyblock.py      # wrap y unwrap de key blocks TR-31 usando psec
 └── dukpt.py         # bonus: derivación DUKPT y descifrado 3DES-ECB
+tests/
+├── test_kcv.py      # KCV CMAC y legacy, verify_kcv
+├── test_kek.py      # ensamblado KEK, carga de componentes
+├── test_keyblock.py # wrap/unwrap TR-31, roundtrip
+├── test_dukpt.py    # IPEK, future key, descifrado
+└── test_validation.py  # validación de entradas hex del CLI
 ```
 
 ---
@@ -121,6 +143,15 @@ La librería verifica el MAC del key block antes de descifrar. Esto implementa
 el principio de *fail fast*: se rechaza un bloque manipulado antes de gastar
 recursos en descifrarlo.
 
+**Comparación KCV en tiempo constante.**
+`verify_kcv` usa `hmac.compare_digest` en lugar de `==` para evitar que un
+atacante pueda inferir cuántos bytes coinciden midiendo el tiempo de respuesta.
+
+**Validación de entradas en la frontera del sistema.**
+El CLI valida formato hex, paridad de caracteres, longitudes esperadas (KCV = 3 bytes,
+KSN = 10 bytes) y múltiplo de bloque (ciphertext 3DES) antes de ejecutar cualquier
+operación criptográfica, devolviendo mensajes de error claros al usuario.
+
 ---
 
 ## Respuestas a las preguntas teóricas
@@ -150,5 +181,6 @@ Por eso el dual control exige que los custodios sean completamente independiente
 | Librería | Versión mínima | Uso |
 |---|---|---|
 | `cryptography` | 42.0.0 | AES-CMAC para KCV, 3DES-ECB para KCV legacy y bonus |
-| `psec` | 3.0.0 | Wrap y unwrap de key blocks TR-31 (ANSI X9.143) |
+| `psec` | 1.0.0 | Wrap y unwrap de key blocks TR-31 (ANSI X9.143) |
 | `dukpt` | 1.0.0 | Derivación IPEK y future key para el bonus |
+| `bitstring` | — | Manejo de BitArray para la API de dukpt |
