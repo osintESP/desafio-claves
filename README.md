@@ -10,8 +10,8 @@ Implementa los tres objetivos del enunciado más el bonus DUKPT.
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/osintESP/intercambio-claves.git
-cd intercambio-claves
+git clone https://github.com/osintESP/desafio-claves.git
+cd desafio-claves
 ```
 
 ### 2. Crear y activar el entorno virtual
