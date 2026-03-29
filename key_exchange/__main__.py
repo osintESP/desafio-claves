@@ -16,7 +16,33 @@ from .keyblock import unwrap_keyblock, wrap_keyblock
 from .dukpt import run_dukpt_bonus
 
 
+def _validate_hex(value: str, name: str, expected_bytes: int = None) -> None:
+    """Valida que value sea un hex string válido y, opcionalmente, de la longitud esperada."""
+    # Si es una ruta a archivo, la validación ocurre al leer el contenido
+    if os.path.isfile(value):
+        return
+    if len(value) % 2 != 0:
+        raise ValueError(f"{name} debe tener un número par de caracteres hex (recibido: {len(value)} chars)")
+    try:
+        decoded = bytes.fromhex(value)
+    except ValueError:
+        raise ValueError(f"{name} contiene caracteres no hex: '{value}'")
+    if expected_bytes is not None and len(decoded) != expected_bytes:
+        raise ValueError(
+            f"{name} debe tener {expected_bytes} bytes ({expected_bytes * 2} chars hex), "
+            f"recibido: {len(decoded)} bytes"
+        )
+
+
+def _validate_inputs_kek(args) -> None:
+    _validate_hex(args.kek_component_1, "kek-component-1")
+    _validate_hex(args.kek_component_2, "kek-component-2")
+    _validate_hex(args.kek_kcv, "kek-kcv", expected_bytes=3)
+
+
 def cmd_export_pek(args):
+    _validate_inputs_kek(args)
+
     print("[*] Ensamblando KEK...")
     kek = assemble_kek(args.kek_component_1, args.kek_component_2, args.kek_kcv)
     print(f"[+] KEK válida. KCV={args.kek_kcv.upper()}")
@@ -40,6 +66,17 @@ def cmd_export_pek(args):
 
 
 def cmd_import_bdk(args):
+    _validate_inputs_kek(args)
+    _validate_hex(args.bdk_kcv, "bdk-kcv", expected_bytes=3)
+    if args.ksn is not None:
+        _validate_hex(args.ksn, "ksn", expected_bytes=10)
+    if args.ciphertext is not None:
+        ct_bytes = len(bytes.fromhex(args.ciphertext))
+        if ct_bytes % 8 != 0:
+            raise ValueError(
+                f"ciphertext debe ser múltiplo de 8 bytes para 3DES-ECB (recibido: {ct_bytes} bytes)"
+            )
+
     print("[*] Ensamblando KEK...")
     kek = assemble_kek(args.kek_component_1, args.kek_component_2, args.kek_kcv)
     print(f"[+] KEK válida. KCV={args.kek_kcv.upper()}")
@@ -85,22 +122,15 @@ def main():
     p_import.add_argument("--kek-kcv", required=True, metavar="HEX")
     p_import.add_argument("--bdk-keyblock", required=True, metavar="KEYBLOCK_O_RUTA")
     p_import.add_argument("--bdk-kcv", required=True, metavar="HEX")
-    p_import.add_argument("--ksn", metavar="HEX", help="KSN para el bonus DUKPT")
+    p_import.add_argument("--ksn", metavar="HEX", help="KSN para el bonus DUKPT (10 bytes)")
     p_import.add_argument("--ciphertext", metavar="HEX", help="Datos cifrados para descifrar con la future key")
 
     args = parser.parse_args()
-
-    # Normalizar guiones en nombres de atributos
-    args.kek_component_1 = getattr(args, "kek_component_1", None) or getattr(args, "kek-component-1", None)
-    args.kek_component_2 = getattr(args, "kek_component_2", None) or getattr(args, "kek-component-2", None)
-    args.kek_kcv = getattr(args, "kek_kcv", None) or getattr(args, "kek-kcv", None)
 
     try:
         if args.command == "export-pek":
             cmd_export_pek(args)
         elif args.command == "import-bdk":
-            args.bdk_keyblock = getattr(args, "bdk_keyblock", None) or getattr(args, "bdk-keyblock", None)
-            args.bdk_kcv = getattr(args, "bdk_kcv", None) or getattr(args, "bdk-kcv", None)
             cmd_import_bdk(args)
     except ValueError as e:
         print(f"[!] Error: {e}", file=sys.stderr)

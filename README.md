@@ -150,5 +150,5 @@ Por eso el dual control exige que los custodios sean completamente independiente
 | Librería | Versión mínima | Uso |
 |---|---|---|
 | `cryptography` | 42.0.0 | AES-CMAC para KCV, 3DES-ECB para KCV legacy y bonus |
-| `psec` | 3.0.0 | Wrap y unwrap de key blocks TR-31 (ANSI X9.143) |
+| `psec` | 1.0.0 | Wrap y unwrap de key blocks TR-31 (ANSI X9.143) |
 | `dukpt` | 1.0.0 | Derivación IPEK y future key para el bonus |
