@@ -37,14 +37,12 @@ class TestRunDukptBonus:
         assert r1["future_key"] == r2["future_key"]
 
     def test_decrypt_with_ciphertext(self):
-        # Cifrar datos de prueba con la future key para luego descifrarlos
         from cryptography.hazmat.primitives.ciphers import Cipher, modes
         from cryptography.hazmat.decrepit.ciphers.algorithms import TripleDES
         from cryptography.hazmat.backends import default_backend
 
         result_no_ct = run_dukpt_bonus(BDK, ksn_hex=DEFAULT_KSN)
         future_key = bytes.fromhex(result_no_ct["future_key"])
-        # Expandir a 24 bytes (3DES-112 → 3DES-168)
         key24 = future_key + future_key[:8]
         plaintext = b"TestData"  # 8 bytes = 1 bloque 3DES
         cipher = Cipher(TripleDES(key24), modes.ECB(), backend=default_backend())
@@ -52,3 +50,38 @@ class TestRunDukptBonus:
 
         result = run_dukpt_bonus(BDK, ksn_hex=DEFAULT_KSN, ciphertext_hex=ciphertext.hex())
         assert bytes.fromhex(result["plaintext"]) == plaintext
+
+    def test_bdk_wrong_type_raises(self):
+        with pytest.raises(TypeError):
+            run_dukpt_bonus("not bytes", ksn_hex=DEFAULT_KSN)
+
+    def test_bdk_none_raises(self):
+        with pytest.raises(TypeError):
+            run_dukpt_bonus(None, ksn_hex=DEFAULT_KSN)
+
+    def test_bdk_wrong_size_raises(self):
+        for size in (0, 8, 12, 15, 17, 24, 32):
+            with pytest.raises(ValueError, match="BDK debe tener"):
+                run_dukpt_bonus(b"\x00" * size, ksn_hex=DEFAULT_KSN)
+
+    def test_ksn_empty_raises(self):
+        with pytest.raises(ValueError):
+            run_dukpt_bonus(BDK, ksn_hex="")
+
+    def test_ksn_none_raises(self):
+        with pytest.raises(ValueError):
+            run_dukpt_bonus(BDK, ksn_hex=None)
+
+    def test_ksn_wrong_length_raises(self):
+        for ksn in ("FF", "FFFF9876543210E0000", "FFFF9876543210E000F200"):
+            with pytest.raises(ValueError, match="KSN debe tener"):
+                run_dukpt_bonus(BDK, ksn_hex=ksn)
+
+    def test_ciphertext_not_multiple_of_8_raises(self):
+        for size in (1, 7, 9, 15):
+            with pytest.raises(ValueError, match="múltiplo de 8"):
+                run_dukpt_bonus(BDK, ksn_hex=DEFAULT_KSN, ciphertext_hex="AA" * size)
+
+    def test_ciphertext_empty_raises(self):
+        with pytest.raises(ValueError, match="vacío"):
+            run_dukpt_bonus(BDK, ksn_hex=DEFAULT_KSN, ciphertext_hex="")

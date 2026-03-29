@@ -3,7 +3,6 @@ Tests para la validación de entradas del CLI (__main__.py).
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
 from key_exchange.__main__ import _validate_hex
 
 
@@ -31,3 +30,15 @@ class TestValidateHex:
         p = tmp_path / "comp.hex"
         p.write_text("not_validated_here")
         _validate_hex(str(p), "test")  # sin excepción aunque el contenido sea inválido
+
+    def test_empty_string_raises(self):
+        with pytest.raises(ValueError, match="vacío"):
+            _validate_hex("", "test")
+
+    def test_none_raises_type_error(self):
+        with pytest.raises(TypeError):
+            _validate_hex(None, "test")
+
+    def test_int_raises_type_error(self):
+        with pytest.raises(TypeError):
+            _validate_hex(123, "test")

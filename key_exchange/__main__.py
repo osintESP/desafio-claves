@@ -22,9 +22,13 @@ from .dukpt import run_dukpt_bonus
 
 def _validate_hex(value: str, name: str, expected_bytes: int = None) -> None:
     """Valida que value sea un hex string válido y, opcionalmente, de la longitud esperada."""
+    if not isinstance(value, str):
+        raise TypeError(f"{name} debe ser un string")
     # Si es una ruta a archivo, la validación ocurre al leer el contenido
     if os.path.isfile(value):
         return
+    if not value:
+        raise ValueError(f"{name} no puede estar vacío")
     if len(value) % 2 != 0:
         raise ValueError(f"{name} debe tener un número par de caracteres hex (recibido: {len(value)} chars)")
     try:

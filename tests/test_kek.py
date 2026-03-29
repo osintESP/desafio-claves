@@ -31,6 +31,42 @@ class TestLoadComponent:
         finally:
             os.unlink(path)
 
+    def test_none_raises_type_error(self):
+        with pytest.raises(TypeError):
+            _load_component(None)
+
+    def test_int_raises_type_error(self):
+        with pytest.raises(TypeError):
+            _load_component(123)
+
+    def test_empty_string_raises(self):
+        with pytest.raises(ValueError, match="vacío"):
+            _load_component("")
+
+    def test_non_hex_chars_raises(self):
+        with pytest.raises(ValueError, match="no hexadecimales"):
+            _load_component("GGHHIIJJ")
+
+    def test_whitespace_in_hex_raises(self):
+        with pytest.raises(ValueError, match="no hexadecimales"):
+            _load_component("AA BB CC DD")
+
+    def test_odd_length_raises(self):
+        with pytest.raises(ValueError, match="par"):
+            _load_component("ABC")
+
+    def test_empty_file_raises(self, tmp_path):
+        p = tmp_path / "empty.txt"
+        p.write_text("")
+        with pytest.raises(ValueError, match="vacío"):
+            _load_component(str(p))
+
+    def test_whitespace_only_file_raises(self, tmp_path):
+        p = tmp_path / "spaces.txt"
+        p.write_text("   \n  ")
+        with pytest.raises(ValueError, match="vacío"):
+            _load_component(str(p))
+
 
 class TestAssembleKek:
     def test_xor_produces_correct_kek(self):

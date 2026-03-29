@@ -3,16 +3,29 @@ kek.py — Ensamblado de la KEK por XOR de dos componentes y validación KCV.
 """
 
 import os
+import re
 from .kcv import cmac_kcv, verify_kcv
+
+_HEX_RE = re.compile(r'^[0-9a-fA-F]+$')
 
 
 def _load_component(value: str) -> bytes:
     """
     Acepta un valor hex directo o una ruta a un archivo que contenga el hex.
     """
+    if not isinstance(value, str):
+        raise TypeError("El componente debe ser un string hex o una ruta a archivo")
+    if not value:
+        raise ValueError("El componente no puede estar vacío")
     if os.path.isfile(value):
         with open(value, "r") as f:
             value = f.read().strip()
+        if not value:
+            raise ValueError("El archivo del componente está vacío")
+    if not _HEX_RE.match(value):
+        raise ValueError("El componente contiene caracteres no hexadecimales")
+    if len(value) % 2 != 0:
+        raise ValueError("El componente debe tener un número par de caracteres hex")
     return bytes.fromhex(value)
 
 

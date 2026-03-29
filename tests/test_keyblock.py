@@ -37,6 +37,24 @@ class TestUnwrapKeyblock:
         with pytest.raises(Exception):
             unwrap_keyblock(BDK_KEYBLOCK, bad_kek)
 
+    def test_none_keyblock_raises_type_error(self):
+        with pytest.raises(TypeError):
+            unwrap_keyblock(None, KEK)
+
+    def test_empty_keyblock_raises(self):
+        with pytest.raises(ValueError, match="vacío"):
+            unwrap_keyblock("", KEK)
+
+    def test_empty_file_raises(self, tmp_path):
+        p = tmp_path / "empty.txt"
+        p.write_text("")
+        with pytest.raises(ValueError, match="vacío"):
+            unwrap_keyblock(str(p), KEK)
+
+    def test_none_kek_raises_type_error(self):
+        with pytest.raises(TypeError):
+            unwrap_keyblock(BDK_KEYBLOCK, None)
+
 
 class TestWrapKeyblock:
     def test_wrap_produces_tr31_string(self):
@@ -50,3 +68,26 @@ class TestWrapKeyblock:
         keyblock = wrap_keyblock(pek, KEK, key_usage="P0")
         recovered = unwrap_keyblock(keyblock, KEK)
         assert recovered == pek
+
+    def test_invalid_key_usage_raises(self):
+        pek = os.urandom(32)
+        with pytest.raises(ValueError, match="TR-31"):
+            wrap_keyblock(pek, KEK, key_usage="XX")
+
+    def test_empty_key_usage_raises(self):
+        pek = os.urandom(32)
+        with pytest.raises(ValueError, match="TR-31"):
+            wrap_keyblock(pek, KEK, key_usage="")
+
+    def test_invalid_key_size_raises(self):
+        for size in (0, 1, 7, 15, 17, 31, 33):
+            with pytest.raises(ValueError, match="Tamaño de clave inválido"):
+                wrap_keyblock(b"\x00" * size, KEK, key_usage="P0")
+
+    def test_none_key_raises_type_error(self):
+        with pytest.raises(TypeError):
+            wrap_keyblock(None, KEK)
+
+    def test_none_kek_raises_type_error(self):
+        with pytest.raises(TypeError):
+            wrap_keyblock(os.urandom(32), None)

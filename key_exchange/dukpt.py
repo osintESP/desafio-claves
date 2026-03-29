@@ -17,6 +17,9 @@ from bitstring import BitArray
 # KSN del enunciado
 DEFAULT_KSN = "FFFF9876543210E00002"
 
+_BDK_SIZE = 16   # 3DES-112
+_KSN_SIZE = 10   # 10 bytes = 20 hex chars
+
 
 def run_dukpt_bonus(bdk: bytes, ksn_hex: str = DEFAULT_KSN, ciphertext_hex: str = None) -> dict:
     """
@@ -31,17 +34,39 @@ def run_dukpt_bonus(bdk: bytes, ksn_hex: str = DEFAULT_KSN, ciphertext_hex: str 
     Returns:
         dict con ksn, ipek, future_key y (si hay ciphertext) plaintext
     """
-    ksn_bytes = bytes.fromhex(ksn_hex)
-    ksn_bits = BitArray(bytes=ksn_bytes)
+    if not isinstance(bdk, bytes):
+        raise TypeError("bdk debe ser bytes")
+    if len(bdk) != _BDK_SIZE:
+        raise ValueError(f"BDK debe tener {_BDK_SIZE} bytes (recibido: {len(bdk)})")
 
-    server = dukpt_lib.Server(bdk=bdk)
-    ipek_bits = server.generate_ipek(ksn_bits)
-    ipek = ipek_bits.bytes
+    if not isinstance(ksn_hex, str) or not ksn_hex:
+        raise ValueError("ksn_hex debe ser un string hex no vacío")
+    if len(ksn_hex) != _KSN_SIZE * 2:
+        raise ValueError(f"KSN debe tener {_KSN_SIZE * 2} caracteres hex (recibido: {len(ksn_hex)})")
 
-    # gen_key() está roto cuando recibe un BitArray (lo convierte a 640 bits).
-    # Llamamos generate_ipek + derive_key directamente usando ksn como bytes.
-    future_key_bits = server.derive_key(ipek_bits, BitArray(bytes=ksn_bytes))
-    future_key = future_key_bits.bytes
+    if ciphertext_hex is not None:
+        ct_bytes = bytes.fromhex(ciphertext_hex)
+        if len(ct_bytes) == 0:
+            raise ValueError("El ciphertext no puede estar vacío")
+        if len(ct_bytes) % 8 != 0:
+            raise ValueError(
+                f"El ciphertext debe ser múltiplo de 8 bytes para 3DES-ECB (recibido: {len(ct_bytes)} bytes)"
+            )
+
+    try:
+        ksn_bytes = bytes.fromhex(ksn_hex)
+        ksn_bits = BitArray(bytes=ksn_bytes)
+
+        server = dukpt_lib.Server(bdk=bdk)
+        ipek_bits = server.generate_ipek(ksn_bits)
+        ipek = ipek_bits.bytes
+
+        # gen_key() está roto cuando recibe un BitArray (lo convierte a 640 bits).
+        # Llamamos generate_ipek + derive_key directamente usando ksn como bytes.
+        future_key_bits = server.derive_key(ipek_bits, BitArray(bytes=ksn_bytes))
+        future_key = future_key_bits.bytes
+    except Exception as e:
+        raise ValueError(f"Error en derivación DUKPT: {e}") from e
 
     result = {
         "ksn": ksn_hex.upper(),
@@ -59,6 +84,8 @@ def run_dukpt_bonus(bdk: bytes, ksn_hex: str = DEFAULT_KSN, ciphertext_hex: str 
 
 def _decrypt_3des_ecb(key: bytes, ciphertext: bytes) -> bytes:
     """Descifra datos con 3DES-ECB."""
+    if len(key) not in (16, 24):
+        raise ValueError(f"La future key debe tener 16 o 24 bytes (recibido: {len(key)})")
     # Expandir clave de 16 a 24 bytes si es necesario (3DES-112 → 3DES-168)
     if len(key) == 16:
         key = key + key[:8]

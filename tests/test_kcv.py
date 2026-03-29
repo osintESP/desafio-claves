@@ -32,6 +32,19 @@ class TestCmacKcv:
     def test_deterministic(self):
         assert cmac_kcv(KEK) == cmac_kcv(KEK)
 
+    def test_wrong_type_raises_type_error(self):
+        with pytest.raises(TypeError):
+            cmac_kcv("not bytes")
+
+    def test_none_raises_type_error(self):
+        with pytest.raises(TypeError):
+            cmac_kcv(None)
+
+    def test_invalid_key_size_raises(self):
+        for size in (0, 1, 8, 15, 17, 31, 33, 64):
+            with pytest.raises(ValueError, match="16, 24 o 32"):
+                cmac_kcv(b"\x00" * size)
+
 
 class TestLegacyKcv:
     def test_returns_3_bytes_by_default(self):
@@ -44,6 +57,19 @@ class TestLegacyKcv:
 
     def test_deterministic(self):
         assert legacy_kcv(BDK) == legacy_kcv(BDK)
+
+    def test_wrong_type_raises_type_error(self):
+        with pytest.raises(TypeError):
+            legacy_kcv("not bytes")
+
+    def test_none_raises_type_error(self):
+        with pytest.raises(TypeError):
+            legacy_kcv(None)
+
+    def test_invalid_key_size_raises(self):
+        for size in (0, 8, 15, 17, 32):
+            with pytest.raises(ValueError, match="16 o 24"):
+                legacy_kcv(b"\x00" * size)
 
 
 class TestVerifyKcv:
