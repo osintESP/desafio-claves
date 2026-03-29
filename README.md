@@ -59,6 +59,8 @@ python3 -m key_exchange
 python -m key_exchange
 ```
 
+El programa pide cada valor de a uno, con una línea de entrada por campo:
+
 ```
 ============================================================
   Intercambio de claves criptográficas — Modo interactivo
@@ -67,11 +69,33 @@ python -m key_exchange
 Seleccione una operación:
   1) export-pek  — Generar y exportar una PEK en key block TR-31
   2) import-bdk  — Importar y validar la BDK desde un key block TR-31
+
+Opción (1 o 2): 2
+
+--- Componentes de la KEK ---
+  KEK Componente 1  (hex o ruta a archivo): db375bb9dce3b14947e04e92a9356ebbb6e456f3518aed92c8dbc891f22f55d6
+  KEK Componente 2  (hex o ruta a archivo): 1e924acdb5442d3000c0fc9b20101aff1bd7a9bc27d36888c50cef64a7c818b7
+  KEK KCV  (6 caracteres hex): F74B90
+
+--- Parámetros de import-bdk ---
+  BDK Key Block  (hex o ruta a archivo): bdk_keyblock.txt
+  BDK KCV  (6 caracteres hex): EABBDC
+  KSN (DUKPT)  (20 chars hex, 10 bytes) [Enter para omitir]: 729C77361E9A51E000F2
+  Ciphertext a descifrar  (hex, múltiplo de 8 bytes) [Enter para omitir]: FCC832A91953151148E86A01BE9420AC
 ```
 
-> **Tip:** Para valores largos como el key block TR-31, podés guardarlos en un archivo
-> de texto y escribir la ruta del archivo cuando el programa lo solicite.
-> Ejemplo: guardá el key block en `bdk_keyblock.txt` e ingresá `bdk_keyblock.txt`.
+> **Tip:** El key block TR-31 de la BDK es muy largo para pegarlo directamente.
+> Guardalo en un archivo de texto primero:
+>
+> **Mac / Linux:**
+> ```bash
+> echo "D0112B0TX00E000080BF1D76A239777F8C2B605EB4FCF6DC9B9CFC6A5170C18282BDAB7D4D4D4559BC6A952101BA74EF8C1563BC2A73BF76" > bdk_keyblock.txt
+> ```
+> **Windows:**
+> ```bat
+> echo D0112B0TX00E000080BF1D76A239777F8C2B605EB4FCF6DC9B9CFC6A5170C18282BDAB7D4D4D4559BC6A952101BA74EF8C1563BC2A73BF76 > bdk_keyblock.txt
+> ```
+> Luego cuando el programa pida el BDK Key Block, ingresá: `bdk_keyblock.txt`
 
 ---
 
